@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tesouro IPCA+ 2032</title>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Source Han Sans SC', system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .container {
+      background: #161b22;
+      padding: 40px;
+      border-radius: 20px;
+      border: 1px solid #30363d;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .rate {
+      font-size: 5em;
+      font-weight: 900;
+      color: #58a6ff;
+      margin: 15px 0;
+      letter-spacing: -2px;
+    }
+    .label {
+      font-size: 1.2em;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 5px 15px;
+      border-radius: 15px;
+      font-size: 0.9em;
+      font-weight: bold;
+      background: #21262d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="label">IPCA+ 2032</div>
+    <div id="rate" class="rate">--%</div>
+    <div id="status" class="status">CARREGANDO...</div>
+  </div>
+
+  <script src="../libs/js/constants.js"></script>
+  <script src="../libs/js/eventEmitter.js"></script>
+  <script src="../libs/js/timers.js"></script>
+  <script src="../libs/js/utils.js"></script>
+  <script src="../libs/js/ulanziApi.js"></script>
+
+  <script>
+    async function refresh() {
+      const rateEl = document.getElementById('rate');
+      const statusEl = document.getElementById('status');
+      
+      try {
+        const url = "https://test123.jacob1818.workers.dev/";
+        const res = await fetch(url + "?_t=" + Date.now());
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        
+        if (data.rate && data.rate !== "---") {
+          const rateVal = parseFloat(data.rate);
+          const rateStr = rateVal.toFixed(2) + '%';
+          const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const source = data.source || "TESOURO";
+          
+          rateEl.innerText = rateStr;
+          statusEl.innerText = `${source} • ${timeStr}`;
+
+          if (window.TesouroDisplayInstance) {
+              window.TesouroDisplayInstance.currentRate = rateStr;
+              window.TesouroDisplayInstance.marketSource = source;
+              window.TesouroDisplayInstance.lastUpdate = timeStr;
+              window.TesouroDisplayInstance.render();
+          }
+        }
+      } catch (e) {
+        statusEl.innerText = "OFFLINE";
+      }
+    }
+
+    window.onload = () => {
+      refresh();
+      setInterval(refresh, 600000); // Atualiza a cada 10 min
+    };
+  </script>
+
+  <script src="./actions/TesouroDisplay.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
