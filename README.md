@@ -46,4 +46,4 @@ MIT
 
 ---
 
-*Developed by Jacob Salzberg with the assistance of Antigravity AI.*
+*Developed by Jacob Salzberg.*
